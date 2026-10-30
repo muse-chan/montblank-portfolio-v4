@@ -6,10 +6,10 @@ import { formatCount } from '@/lib/format';
 import type { GithubStats } from '@/lib/github';
 
 interface Props {
-	stats: GithubStats | null;
+	stats: GithubStats | null | Promise<GithubStats | null>;
 }
 
-const { stats } = Astro.props;
+const stats = await Astro.props.stats;
 const profileUrl = `https://github.com/${profile.handle}`;
 const peak = stats ? Math.max(1, ...stats.recentDays.map((day) => day.count)) : 1;
 // Bars snap to whole 3px dots, from 0 to GRAPH_DOTS dots tall.

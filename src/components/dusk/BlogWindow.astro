@@ -6,10 +6,10 @@ import type { Post } from '@/lib/feeds';
 import { formatDate } from '@/lib/format';
 
 interface Props {
-	posts: Post[] | null;
+	posts: Post[] | null | Promise<Post[] | null>;
 }
 
-const { posts } = Astro.props;
+const posts = await Astro.props.posts;
 const siteBySource = new Map(writingSites.map((site) => [site.label, site]));
 // As in portfolio-v3, posts from the last week get a "New" label.
 const NEW_WITHIN_MS = 7 * 24 * 60 * 60 * 1000;

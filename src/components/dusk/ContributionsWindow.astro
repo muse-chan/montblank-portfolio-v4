@@ -5,10 +5,10 @@ import Window from '@/components/dusk/Window.astro';
 import type { Contribution } from '@/lib/github';
 
 interface Props {
-	contributions: Contribution[] | null;
+	contributions: Contribution[] | null | Promise<Contribution[] | null>;
 }
 
-const { contributions } = Astro.props;
+const contributions = await Astro.props.contributions;
 ---
 
 <Window title="contributions.txt" class="window--left">

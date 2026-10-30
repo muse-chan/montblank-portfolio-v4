@@ -47,19 +47,45 @@ export class Grid {
 		rows.forEach((row, dy) => [...row].forEach((key, dx) => palette[key] && this.set(x + dx, y + dy, palette[key])));
 	}
 
+	/**
+	 * Returns one SVG path per colour, merging identical horizontal runs across adjacent rows without changing any cells.
+	 * @example
+	 * const paths = new Grid(16, 16).paths();
+	 */
 	paths() {
-		const paths = new Map<string, string>();
+		const rectangles: { x: number; y: number; width: number; height: number; color: string }[] = [];
+		let previous = new Map<string, (typeof rectangles)[number]>();
 		for (let y = 0; y < this.height; y += 1) {
+			const current = new Map<string, (typeof rectangles)[number]>();
 			let x = 0;
 			while (x < this.width) {
 				const color = this.cells[y * this.width + x];
 				let end = x + 1;
 				while (end < this.width && this.cells[y * this.width + end] === color) end += 1;
-				if (color) paths.set(color, `${paths.get(color) ?? ''}M${x} ${y}h${end - x}v1h-${end - x}z`);
+				if (color) {
+					const width = end - x;
+					const key = `${x}:${width}:${color}`;
+					const rectangle = previous.get(key);
+					if (rectangle) {
+						rectangle.height += 1;
+						current.set(key, rectangle);
+					} else {
+						const rectangle = { x, y, width, height: 1, color };
+						rectangles.push(rectangle);
+						current.set(key, rectangle);
+					}
+				}
 				x = end;
 			}
+			previous = current;
 		}
-		return [...paths].map(([fill, d]) => ({ fill, d }));
+		const paths = new Map<string, string[]>();
+		for (const { x, y, width, height, color } of rectangles) {
+			const commands = paths.get(color) ?? [];
+			commands.push(`M${x} ${y}h${width}v${height}h-${width}z`);
+			paths.set(color, commands);
+		}
+		return [...paths].map(([fill, commands]) => ({ fill, d: commands.join('') }));
 	}
 }
 

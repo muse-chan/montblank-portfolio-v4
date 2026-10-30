@@ -8,10 +8,10 @@ import type { Work } from '@/lib/github';
 import { spriteSvg } from '@/lib/pixel-grid';
 
 interface Props {
-	works: Work[] | null;
+	works: Work[] | null | Promise<Work[] | null>;
 }
 
-const { works } = Astro.props;
+const works = await Astro.props.works;
 const repositoriesUrl = `https://github.com/${profile.handle}?tab=repositories`;
 const pin = spriteSvg(['..ppp..', '..ppp..', '..ppp..', '.ppppp.', '...p...', '...p...', '...p...'], { p: '#c8442f' });
 ---

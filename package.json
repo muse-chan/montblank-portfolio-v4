@@ -8,6 +8,7 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "test": "node --experimental-transform-types --test tests/*.test.mjs",
     "fonts": "node scripts/build-fonts.mjs",
     "images": "node scripts/build-images.mjs",
     "predev": "npm run fonts && npm run images",

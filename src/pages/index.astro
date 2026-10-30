@@ -18,12 +18,11 @@ import { getContributions, getGithubStats, getWorks } from '@/lib/github';
 // Optional Pages secret: with it GitHub is read through GraphQL, without it through the token-less sources (see src/lib/github-public.ts).
 const githubToken = Astro.locals.runtime?.env?.GITHUB_TOKEN;
 
-const [stats, works, contributions, posts] = await Promise.all([
-	orNull(getGithubStats(githubToken, profile.handle)),
-	orNull(getWorks(githubToken, profile.handle)),
-	orNull(getContributions(githubToken, profile.handle)),
-	orNull(getPosts()),
-]);
+// Start every source together; each window awaits its data so the hero can stream immediately.
+const stats = orNull(getGithubStats(githubToken, profile.handle));
+const works = orNull(getWorks(githubToken, profile.handle));
+const contributions = orNull(getContributions(githubToken, profile.handle));
+const posts = orNull(getPosts());
 ---
 
 <DuskLayout path="/" title={`${profile.name}のポートフォリオ`} description={profile.bio}>

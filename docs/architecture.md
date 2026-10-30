@@ -60,13 +60,15 @@ scripts/build-images.mjs         OGP 画像、相互リンク用バナー、favi
 
 ## 背景のドット絵
 
-景色は画像ファイルではなく、`src/lib/pixel-grid.ts` の `Grid` に色を塗ってビルド時に SVG にしています (`BayView`、`TramStop`、`StonePath` など)。1マスが 3px (1ドット) です。動くもの (窓の明かり、ロープウェイ、波、船、カモメ) は、その上に重ねた要素を CSS の `steps()` で動かします。
+景色は画像ファイルではなく、`src/lib/pixel-grid.ts` の `Grid` に色を塗って SVG にしています (`BayView`、`TramStop`、`StonePath` など)。1マスが 3px (1ドット) です。同じ色の横並びが上下に続くところは、1つの長方形にまとめて SVG を小さくします。石畳のタイルは `src/data/stone-path.ts` で Worker の初期化時に一度だけ作り、リクエストごとには計算しません。動くもの (窓の明かり、ロープウェイ、波、船、カモメ) は、その上に重ねた要素を CSS の `steps()` で動かします。
 
 色は `src/data/scene.ts` にまとめています。ヒーローの水面の色とページの水面の色 (`DuskLayout.astro`) は同じ値にして、境目を見せません。
 
 ## データの取得
 
-`src/pages/index.astro` がリクエストのたびに4つを並行して取得します。結果は `src/lib/cache.ts` が Cloudflare のキャッシュ (Cache API) に1時間置くので、外部 API を呼ぶのはデータセンターごとに1時間1回です。Cache API は `*.pages.dev` では効かないので、そこでは毎回取得します。
+`src/pages/index.astro` がリクエストのたびに4つの取得を並行して始め、各ウィンドウに Promise を渡します。ウィンドウ側で結果を待つので、取得が終わる前に HTML の先頭とヒーローを送れます。完成したページの内容とセクションの順序は変わりません。ブラウザのモジュールスクリプトは、従来どおり HTML の読み込み後に実行します。
+
+結果は `src/lib/cache.ts` が Cloudflare のキャッシュ (Cache API) に1時間置くので、外部 API を呼ぶのはデータセンターごとに1時間1回です。Cache API は `*.pages.dev` では効かないので、そこでは毎回取得します。
 
 取得に失敗したセクションは、ページ全体を落とさずにそのセクションだけ案内を出します (`orNull`)。記事は、取れたサイトの分だけ出します。
 
